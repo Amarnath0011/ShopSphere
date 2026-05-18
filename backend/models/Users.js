@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
         unique : true
     },
     password:{
-        type: string , 
+        type: String , 
         required: [true,"Password is required"],
         select:false
     },
@@ -27,18 +27,17 @@ const userSchema = new mongoose.Schema({
         timestamps:true
     }  
 );
-userSchema.pre("save", async function(next){
+userSchema.pre("save", async function(){
     if(!this.isModified("password")){
-       return next();
+       return ;
     }
     this.password = await bcrypt.hash(this.password,12);
-    return next();
 })
 
-userSchema.methods.matchPassword() = async function(enteredPassword){
+userSchema.methods.matchPassword = async function(enteredPassword){
         return bcrypt.compare(enteredPassword,this.password)
 };
 
 const User =  mongoose.model("User", userSchema);
 
-export default User;
+module.exports  =  User;

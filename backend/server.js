@@ -3,7 +3,7 @@ dotenv.config()
 const express = require('express')
 const cors = require('cors')
 const app = express();
-
+const authRoutes = require('./routes/authRoutes.js')
 const connectDB = require('./config/db')
 
 connectDB()
@@ -22,6 +22,7 @@ app.get('/products', (req, res) => {
         { name: "Phone", price: 20000 }
     ])
 })
+app.use("/api/auth",authRoutes)
 
 
 app.listen(process.env.PORT|| 8001,()=>{

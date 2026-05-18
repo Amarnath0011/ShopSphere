@@ -1,8 +1,7 @@
-import User from "../models/Users"
-import jwt from jasonwebtoken
-import User from "../models/Users";
+const User = require("../models/Users");
+const jwt = require("jsonwebtoken");
 
-export const reqisterUser = async (req,res)=>{
+const registerUser = async (req,res)=>{
     try{
     const {
         name,
@@ -41,16 +40,18 @@ export const reqisterUser = async (req,res)=>{
                 name,
                 email,
                 password,
-                confirmPassword,
                 role
             })
              
-            const token = jwt.sign(
+            const token =  jwt.sign(
                 {
-                    id:user._id,
+                    id: user._id
                 },
                 process.env.JWT_SECRET,
-                process.env.JWT_EXPIRE
+                {
+                   expiresIn: process.env.JWT_EXPIRE
+                }
+                
             )
 
             res.status(201).json({
@@ -60,13 +61,15 @@ export const reqisterUser = async (req,res)=>{
             })
         }
         catch(error){
+            console.log(error);
             res.status(500).json({
                 message: "Error Error Error"
             });
         }
 
 };
-export const loginUser =async (req,res)=>{
+
+const loginUser =async (req,res)=>{
     try{
     const {
         email,
@@ -78,7 +81,9 @@ export const loginUser =async (req,res)=>{
             message: " All fields required "
         })
     }
-    const user = await User.findOne("email")
+    const user = await User.findOne({
+        email
+    }).select("+password");
 
     if(!user){
         return res.status(400).json({
@@ -86,22 +91,23 @@ export const loginUser =async (req,res)=>{
         })
     }
 
-    const isMatch = await bcrypt.compare(
-        password,
-        user.password
-    );
+   const isMatch =
+    await user.matchPassword(password);
     if(!isMatch) {
         return res.status(401).json({
             message: "Wrong credential"
         })
     }
 
-    jwt.sign(
+    const token = jwt.sign(
         {
             id: user._id
         },
         process.env.JWT_SECRET,
-        process.env.JWT_EXPIRE
+        {
+           expiresIn: process.env.JWT_EXPIRE
+        }
+        
     )
 
     return res.status(201).json({
@@ -112,10 +118,16 @@ export const loginUser =async (req,res)=>{
     });
     }
     catch(error){
+        console.log(error);
         res.status(500).json({
-            message: error.message
+            message:"error"
         });
     }
 
 };
+module.exports = {
+    registerUser,
+    loginUser,
+}
+
 
